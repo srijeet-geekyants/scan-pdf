@@ -138,29 +138,35 @@
                 },
                 success: function (response) {
                     console.log(response);
-                    console.log(document.getElementById('record_type').value);
+                    // console.log(document.getElementById('record_type').value);
                     /*if(document.getElementById('record_type').value == 'drawing_number') {
                         document.getElementById('coord_form').classList.add('d-none');
                         //document.getElementById('save-pending-ocr-request').disabled = false;
-                        if (response.success) {
+                        */if (response.success) {
+                            $('#fileViewModal').modal('hide');
                             $('#success-popup').modal('show');
-                            setTimeout(function () {
+                            setTimeout(() => {
                                 $('#success-popup').modal('hide');
-                            }, 1000);
+                            }, 3000);
                         } else {
-                            $('#liveToast').toast('show');
+                            $('#fileViewModal').modal('hide');
+                            $('#alert-popup').modal('show');
+                            setTimeout(() => {
+                                $('#alert-popup').modal('hide');
+                            }, 3000);
                             $('.message').html('Something went Wrong !');
-                        }
+                        }/*
                     }*/
 
                     document.getElementById('coord_form').reset();
-                    document.getElementById('coordinate_title').textContent = 'Drawing Number';
-                    document.getElementById('record_type').value = 'drawing_number';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
                 },
                 error: function (error) {
                     document.getElementById('coord_form').reset();
                     console.error('AJAX Error:', error);
-                    $('#liveToast').toast('show');
+                    $('#alert-popup').toast('show');
                     $('.message').html('Something went Wrong !');
                 }
             });
@@ -277,11 +283,11 @@
             $('.ocr-pending-modal-'+fileId).click();
         });
 
-        //document.getElementById('save-pending-ocr-request').disabled = true;
-        //let image = document.getElementById('clickableImage');
-        //const dimensionsDisplay = document.getElementById('dimensions');
-
-        //let canvas = document.getElementById('overlayCanvas');
+        // document.getElementById('save-pending-ocr-request').disabled = true;
+        // let image = document.getElementById('clickableImage');
+        // const dimensionsDisplay = document.getElementById('dimensions');
+        //
+        // let canvas = document.getElementById('overlayCanvas');
         const ctx = canvas.getContext('2d');
         console.log('image height width', image.width, image.height);
         canvas.width = image.width;

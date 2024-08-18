@@ -30,42 +30,50 @@ class RunOcrOnImage implements ShouldQueue
      */
     public function handle(): void
     {
-        $ocrFile = OcrFiles::find($this->ocrFileId);
-        if(!$ocrFile) {
-            return;
-        }
-        $ocrData = json_decode($ocrFile->ocr_data, 1);
-        $imgPath = $ocrData['img_path'];
-        $jpgToProcess = 'public/'.$imgPath;
-        $width = $ocrData['coords']['w'];
-        $height = $ocrData['coords']['h'];
-        $x = $ocrData['coords']['x'];
-        $y = $ocrData['coords']['y'];
-
-        $imagick = new Imagick();
-        $imagick->readImage(Storage::path($jpgToProcess));
-        $imagick->cropImage($width, $height, $x, $y);
-        $imagick->setImageFormat('jpeg');
-        $imagick->setImageCompressionQuality(100);
-        $imagick->writeImage(Storage::path($jpgToProcess));
-        $imagick->clear();
-        $imagick->destroy();
-
         try {
-            $ocrOutput = (new TesseractOCR(Storage::path($jpgToProcess)))->run();
-        }catch(\Exception $e) {
-            \Log::error('-- Tessaract Job Failed -- ');
-            \Log::info($e->getMessage());
-            //$this->fail($e);
-            $this->delete();
+            $ocrFile = OcrFiles::find($this->ocrFileId);
+            if(!$ocrFile) {
+                return;
+            }
+            $ocrData = json_decode($ocrFile->ocr_data, 1);
+            $imgPath = $ocrData['img_path'];
+            $jpgToProcess = $imgPath;
+            $width = $ocrData['coords']['w'];
+            $height = $ocrData['coords']['h'];
+            $x = $ocrData['coords']['x'];
+            $y = $ocrData['coords']['y'];
+
+            $imagick = new Imagick();
+            $imagick->readImage(Storage::path($jpgToProcess));
+            $imagick->cropImage($width, $height, $x, $y);
+            $imagick->setImageFormat('jpeg');
+            $imagick->setImageCompressionQuality(100);
+            $imagick->writeImage(Storage::path($jpgToProcess));
+            $imagick->clear();
+            $imagick->destroy();
+
+            try {
+                $ocrOutput = (new TesseractOCR(Storage::path($jpgToProcess)))->run();
+            }catch(\Exception $e) {
+                \Log::error('-- Tessaract Job Failed -- ');
+                \Log::info($e->getMessage());
+                //$this->fail($e);
+                $this->delete();
+            }
+
+            $sanitizeTextOcrOutput = self::sanitizeText($ocrOutput);
+
+            $ocrData['ocr_text'] = $sanitizeTextOcrOutput;
+            $ocrFile->ocr_data = json_encode($ocrData);
+            $ocrFile->status = "completed";
+            $ocrFile->save();
         }
-
-        $sanitizeTextOcrOutput = self::sanitizeText($ocrOutput);
-
-        $ocrData['ocr_text'] = $sanitizeTextOcrOutput;
-        $ocrFile->ocr_data = json_encode(json_encode($ocrData));
-        $ocrFile->save();
+    catch(\Exception $e) {
+            $ocrFile->status = "error";
+            $ocrFile->save();
     }
+
+}
 
     private static function sanitizeText($text) {
         /*if($drawingNumber) {

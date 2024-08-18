@@ -1,0 +1,14 @@
+body {
+    background: url("../../assets/images/background-2.jpg");
+    background-size:cover;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100vh;
+    font-family: 'Roboto', serif;
+}
+
+.jumbotron {
+    background: rgb(204 204 204 / 6%);
+    height: 100vh;
+    width: 100%;
+}

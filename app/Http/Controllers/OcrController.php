@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Helpers\ResponseHelper;
 use App\Jobs\PDFToImageJob;
 use App\Jobs\RunOcrOnImage;
 use App\Models\OcrFiles;
@@ -70,28 +71,36 @@ class OcrController extends Controller
 
     public function saveCoordinates(Request $request) {
         $ocrFile = OcrFiles::find($request->ocrFileId);
-        if($ocrFile) {
+        $ocrCoordinatesIsBlank = !($request->coords['x']) || !($request->coords['y']) || !($request->coords['w']) || !($request->coords['h']);
+        if($ocrFile && !$ocrCoordinatesIsBlank) {
             $ocrData = json_decode($ocrFile->ocr_data, 1);
             $ocrData['coords'] = [
-                'x' => $request->coords['x'],
-                'y' => $request->coords['y'],
-                'h' => $request->coords['h'],
-                'w' => $request->coords['w'],
+                'x' => $request->coords['x'] ?? '',
+                'y' => $request->coords['y'] ?? '',
+                'h' => $request->coords['h'] ?? '',
+                'w' => $request->coords['w'] ?? '',
             ];
-            if($ocrData['coordinates_submitted'] === 0) $ocrData['coordinates_submitted'] = 1;
+            if($ocrData['coordinates_submitted'] === 0) {
+                $ocrData['coordinates_submitted'] = 1;
+            }
+            $ocrFile->ocr_data = json_encode($ocrData);
             $ocrFile->status = "processing";
             $ocrFile->save();
-            return response()->setStatuscode(200);
+            dispatch(new RunOcrOnImage($ocrFile->id));
+            return ResponseHelper::success('Coordinates saved successfully');
         }
-        return response()->setStatusCode(400);
+        return ResponseHelper::errorWithMessageAndStatus('Something went wrong !', 400);
     }
 
     public function startOcrProcess(Request $request) {
         $ocrFile = OcrFiles::find($request->ocrFileId);
         if($ocrFile) {
-            dispatch(new RunOcrOnImage($ocrFile->id));
-            return response()->setStatuscode(200);
+            $ocrData = json_decode($ocrFile->ocr_data, 1);
+            if($ocrData['coordinates_submitted'] !== 1) $ocrData['coordinates_submitted'] = 1;
+            $ocrFile->ocr_data = json_encode($ocrData);
+            $ocrFile->save();
+            return ResponseHelper::success('Saved Successfully !');
         }
-        return response()->setStatusCode(400);
+        return ResponseHelper::errorWithMessageAndStatus('Something went wrong !', 400);
     }
 }

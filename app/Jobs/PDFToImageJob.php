@@ -36,12 +36,13 @@ class PDFToImageJob implements ShouldQueue
                 return;
             }
             $pdfPathFromDB = $ocrFile->getAttributes()['pdf_file_path'];
-            $pdfPath = Storage::path('public/'.$pdfPathFromDB);
+            $pdfPath = Storage::path($pdfPathFromDB);
+            $pdfPathToOpen = Storage::path('public/'.$pdfPathFromDB);
             $pathInfo = pathinfo($pdfPath);
 
 
             $imagick->setResolution(200, 200);
-            $imagick->readImage($pdfPath.'[0]');
+            $imagick->readImage($pdfPathToOpen.'[0]');
             $imagick->setImageCompressionQuality(100);
             $imagick->setImageBackgroundColor('white');
             $imagick->setImageAlphaChannel(Imagick::ALPHACHANNEL_REMOVE);

@@ -63,17 +63,11 @@ class UpdateOCRProjectFileDataJob implements ShouldQueue
                     }
             */
 
-            if(!isset($ocrData['drawing_title'])) {
-                $ocrData['drawing_title']['x'] = '';
-                $ocrData['drawing_title']['y'] = '';
-                $ocrData['drawing_title']['h'] = '';
-                $ocrData['drawing_title']['w'] = '';
-            }
-            if(!isset($ocrData['drawing_number'])) {
-                $ocrData['drawing_number']['x'] = '';
-                $ocrData['drawing_number']['y'] = '';
-                $ocrData['drawing_number']['h'] = '';
-                $ocrData['drawing_number']['w'] = '';
+            if(!isset($ocrData['coords'])) {
+                $ocrData['coords']['x'] = '';
+                $ocrData['coords']['y'] = '';
+                $ocrData['coords']['h'] = '';
+                $ocrData['coords']['w'] = '';
             }
 //            if(!isset($ocrData['page_to_process'])) {
 //                $ocrData[$height.'X'.$width]['page_to_process'] = [$pathInfo['filename']];
